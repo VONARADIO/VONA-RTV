@@ -75,6 +75,44 @@
             color: var(--text-muted);
             margin-top: 5px;
         }
+        
+        /* Estilos para el Gestor de Noticias */
+        .news-manager {
+            margin-top: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 30px;
+        }
+        .admin-news-item {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+        .admin-news-title {
+            font-weight: 600;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        .delete-btn:hover {
+            background: #c0392b;
+        }
     </style>
 </head>
 <body>
@@ -123,7 +161,7 @@
                 <div class="form-group">
                     <label>Archivo Multimedia (Foto, Video o Audio)</label>
                     <input type="file" id="news-file" accept="image/*,video/*,audio/*">
-                    <p class="helper-text">Sube una foto, un video o un archivo de audio directamente desde tu celular o computadora.</p>
+                    <p class="helper-text">Sube una foto, un video o un archivo de audio.</p>
                 </div>
                 <div class="form-group">
                     <label>Contenido</label>
@@ -131,6 +169,15 @@
                 </div>
                 <button class="publish-btn" onclick="guardarNoticia()">Publicar Ahora</button>
                 <p id="msg-success" style="color: var(--accent-1); text-align: center; margin-top: 15px; display: none;">¡Noticia publicada con éxito!</p>
+
+                <!-- LISTA DE NOTICIAS PARA BORRAR -->
+                <div class="news-manager">
+                    <h2>Gestionar <span class="gradient-text">Noticias</span></h2>
+                    <p class="helper-text" style="margin-bottom: 15px;">Aquí puedes ver tus noticias publicadas y borrarlas si te equivocaste.</p>
+                    <div id="admin-news-list">
+                        <!-- Las noticias aparecerán aquí con un botón de borrar -->
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -146,6 +193,7 @@
             if(usuarioIngresado === usuarioValido && passIngresada === passSecreta) {
                 document.getElementById('login-box').classList.add('hidden');
                 document.getElementById('form-box').classList.remove('hidden');
+                cargarNoticiasAdmin(); // Cargamos la lista al iniciar sesión
             } else {
                 alert("Usuario o contraseña incorrectos");
             }
@@ -171,17 +219,17 @@
 
                 lector.onload = function(e) {
                     const mediaData = e.target.result; 
-                    
                     noticias.unshift({ titulo, media: mediaData, tipo: tipoArchivo, desc, fecha });
                     localStorage.setItem('mis_noticias', JSON.stringify(noticias));
-                    
                     limpiarFormulario();
+                    cargarNoticiasAdmin(); // Actualizar la lista tras publicar
                 };
                 lector.readAsDataURL(archivo);
             } else {
                 noticias.unshift({ titulo, media: '', tipo: '', desc, fecha });
                 localStorage.setItem('mis_noticias', JSON.stringify(noticias));
                 limpiarFormulario();
+                cargarNoticiasAdmin(); // Actualizar la lista tras publicar
             }
         }
 
@@ -193,6 +241,39 @@
             const msg = document.getElementById('msg-success');
             msg.style.display = 'block';
             setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+
+        // NUEVA FUNCIÓN: Cargar las noticias en el panel admin
+        function cargarNoticiasAdmin() {
+            const listaDiv = document.getElementById('admin-news-list');
+            let noticias = JSON.parse(localStorage.getItem('mis_noticias')) || [];
+            listaDiv.innerHTML = '';
+
+            if (noticias.length === 0) {
+                listaDiv.innerHTML = '<p class="helper-text" style="text-align:center;">No hay noticias publicadas en este momento.</p>';
+                return;
+            }
+
+            noticias.forEach((noticia, index) => {
+                listaDiv.innerHTML += `
+                    <div class="admin-news-item">
+                        <span class="admin-news-title">${noticia.titulo}</span>
+                        <button class="delete-btn" onclick="borrarNoticia(${index})">Borrar</button>
+                    </div>
+                `;
+            });
+        }
+
+        // NUEVA FUNCIÓN: Borrar una noticia
+        function borrarNoticia(index) {
+            let confirmacion = confirm("¿Estás seguro de que deseas borrar esta noticia? Esta acción no se puede deshacer.");
+            if (confirmacion) {
+                let noticias = JSON.parse(localStorage.getItem('mis_noticias')) || [];
+                noticias.splice(index, 1); // Elimina 1 elemento en la posición "index"
+                localStorage.setItem('mis_noticias', JSON.stringify(noticias));
+                cargarNoticiasAdmin(); // Refresca la lista en el admin
+                alert("Noticia borrada correctamente.");
+            }
         }
     </script>
 </body>
