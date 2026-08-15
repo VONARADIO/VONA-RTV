@@ -1,12 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PAGINA WEB</title>
+    <title>VONA RTV - Tu voz, tu imagen</title>
+    <!-- Importando fuente moderna de Google -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    
+    <!-- Efecto de luces de fondo -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <header>
+        <div class="logo">
+            <!-- AQUÍ ESTÁ LA RUTA DE LA IMAGEN. El archivo debe llamarse logo.png y estar en la misma carpeta -->
+            <img src="logo.png" alt="Logo Radio" class="logo-icon"> VONA <span>RTV</span>
+        </div>
+        <div class="live-badge">
+            <span class="dot"></span> EN VIVO
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>Siente la<br><span class="gradient-text">Música.</span></h1>
+            <p>Tu banda sonora diaria. Transmitiendo la mejor energía y los mejores éxitos directamente desde nuestra casa hasta tus oídos.</p>
+            
+            <!-- Ecualizador animado solo con CSS -->
+            <div class="equalizer">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <!-- Frase motivacional -->
+            <div class="quote-container">
+                <p class="motivational-quote">"El volumen de la música refleja la intensidad de tus sueños. Sube el volumen, no te rindas y haz que el mundo te escuche."</p>
+            </div>
+            
+            <!-- Botón de WhatsApp -->
+            <a href="https://wa.me/593983718659" class="whatsapp-btn" target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 32 32" class="wa-icon" fill="currentColor">
+                    <path d="M16 0c-8.837 0-16 7.163-16 16 0 2.825 0.737 5.481 2.050 7.781l-2.050 8.219 8.419-2.206c2.256 1.188 4.831 1.863 7.581 1.863 8.837 0 16-7.163 16-16s-7.163-16-16-16zM16 29.256c-2.481 0-4.819-0.65-6.894-1.787l-0.494-0.294-5.112 1.344 1.363-5-0.325-0.519c-1.256-2.031-1.95-4.425-1.95-6.969 0-7.319 5.956-13.275 13.275-13.275s13.275 5.956 13.275 13.275-5.956 13.275-13.275 13.275zM23.363 19.344c-0.406-0.206-2.406-1.188-2.781-1.325-0.375-0.131-0.644-0.206-0.919 0.206-0.275 0.406-1.050 1.325-1.288 1.594-0.238 0.275-0.475 0.306-0.881 0.106-0.406-0.206-1.719-0.638-3.275-2.031-1.213-1.088-2.031-2.431-2.269-2.837-0.238-0.406-0.025-0.625 0.181-0.831 0.181-0.181 0.406-0.475 0.613-0.712 0.206-0.238 0.275-0.406 0.406-0.681 0.131-0.275 0.069-0.519-0.031-0.712-0.106-0.206-0.919-2.219-1.256-3.037-0.331-0.8-0.669-0.694-0.919-0.706-0.238-0.013-0.512-0.013-0.787-0.013-0.275 0-0.719 0.106-1.094 0.512-0.375 0.406-1.431 1.4-1.431 3.413s1.469 3.956 1.669 4.225c0.206 0.275 2.881 4.4 6.981 6.169 0.975 0.419 1.738 0.669 2.331 0.856 0.981 0.313 1.875 0.269 2.581 0.163 0.794-0.119 2.406-0.981 2.744-1.931 0.338-0.95 0.338-1.763 0.238-1.931-0.1-0.169-0.375-0.275-0.781-0.481z"></path>
+                </svg>
+                Pide tu canción
+            </a>
+        </div>
+    </footer>
 </body>
 </html>
