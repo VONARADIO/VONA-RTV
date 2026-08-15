@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Noticias - VONA RTV</title>
-    <!-- Importando fuente moderna de Google -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Estilos adaptados para mostrar fotos, videos o audios locales */
         .news-card img, .news-card video {
             width: 100%;
             height: 220px;
@@ -30,7 +28,6 @@
     </style>
 </head>
 <body>
-    <!-- Efecto de luces de fondo -->
     <div class="bg-glow bg-glow-1"></div>
     <div class="bg-glow bg-glow-2"></div>
 
@@ -41,10 +38,10 @@
             </a>
         </div>
         
-        <!-- Barra de navegación superior -->
         <nav class="main-nav">
             <a href="index.html" class="nav-link">Inicio</a>
             <a href="noticias.html" class="nav-link active">Noticias</a>
+            <a href="admin.html" class="nav-link">Iniciar Sesión</a>
         </nav>
 
         <div class="live-badge">
@@ -58,9 +55,8 @@
             <p>Entérate de los acontecimientos más importantes, exclusivas y novedades musicales.</p>
         </section>
 
-        <!-- Cuadrícula de Noticias -->
         <div class="news-grid" id="news-container">
-            <!-- Las noticias escritas aparecerán aquí automáticamente -->
+            <!-- Las noticias aparecerán aquí -->
         </div>
     </main>
 
@@ -84,7 +80,8 @@
         const noticias = JSON.parse(localStorage.getItem('mis_noticias')) || [];
 
         if (noticias.length === 0) {
-            contenedor.innerHTML = `<p style="color: var(--text-muted); text-align: center; grid-column: 1/-1;">No hay noticias publicadas todavía. Ve a admin.html para crear una.</p>`;
+            // Mensaje amigable para los usuarios cuando no hay noticias
+            contenedor.innerHTML = `<p style="color: var(--text-muted); text-align: center; font-size: 1.1rem; grid-column: 1/-1;">Muy pronto publicaremos nuevas noticias. ¡Mantente atento!</p>`;
         } else {
             noticias.forEach(noticia => {
                 const tarjeta = document.createElement('article');
@@ -93,12 +90,9 @@
                 let mediaHtml = `<div class="news-image-placeholder"><span>VONA RTV Noticias</span></div>`;
 
                 if (noticia.media) {
-                    // Si el tipo guardado es video
                     if (noticia.tipo && noticia.tipo.startsWith('video')) {
                         mediaHtml = `<video controls><source src="${noticia.media}" type="${noticia.tipo}">Tu navegador no soporta videos.</video>`;
-                    } 
-                    // Si el tipo guardado es audio
-                    else if (noticia.tipo && noticia.tipo.startsWith('audio')) {
+                    } else if (noticia.tipo && noticia.tipo.startsWith('audio')) {
                         mediaHtml = `
                             <div class="audio-container">
                                 <audio controls>
@@ -107,9 +101,7 @@
                                 </audio>
                             </div>
                         `;
-                    } 
-                    // Por defecto, si es imagen
-                    else {
+                    } else {
                         mediaHtml = `<img src="${noticia.media}" alt="${noticia.titulo}">`;
                     }
                 }
