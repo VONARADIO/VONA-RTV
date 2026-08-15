@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - VONA RTV</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-container {
+            max-width: 600px;
+            margin: 160px auto 60px auto;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 40px;
+            border-radius: 12px;
+        }
+        .admin-container h1 {
+            font-size: 2rem;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+        .form-group input[type="text"], 
+        .form-group input[type="password"], 
+        .form-group textarea, 
+        .form-group input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: #fff;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .form-group input[type="file"] {
+            cursor: pointer;
+        }
+        .form-group textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        .publish-btn {
+            background: linear-gradient(to right, var(--accent-1), var(--accent-2));
+            color: #0b0c10;
+            border: none;
+            padding: 12px 25px;
+            font-weight: 800;
+            border-radius: 50px;
+            cursor: pointer;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: opacity 0.3s ease;
+        }
+        .publish-btn:hover {
+            opacity: 0.9;
+        }
+        #login-box {
+            text-align: center;
+        }
+        .hidden {
+            display: none;
+        }
+        .helper-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <header>
+        <div class="logo">
+            <a href="index.html" style="display: flex; align-items: center; gap: 15px; text-decoration: none; color: inherit;">
+                <img src="logo.png" alt="Logo VONA RTV" class="logo-icon"> VONA <span>RTV</span>
+            </a>
+        </div>
+        <nav class="main-nav">
+            <a href="index.html" class="nav-link">Inicio</a>
+            <a href="noticias.html" class="nav-link">Noticias</a>
+        </nav>
+        <div class="live-badge">
+            <span class="dot"></span> EN VIVO
+        </div>
+    </header>
+
+    <main>
+        <div class="admin-container">
+            <!-- LOGIN -->
+            <div id="login-box">
+                <h1>Acceso <span class="gradient-text">Admin</span></h1>
+                <div class="form-group">
+                    <label>Usuario</label>
+                    <input type="text" id="admin-user" placeholder="Ingresa tu usuario">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="admin-pass" placeholder="Ingresa tu clave">
+                </div>
+                <button class="publish-btn" onclick="verificarPass()">Entrar</button>
+            </div>
+
+            <!-- FORMULARIO DE NOTICIAS -->
+            <div id="form-box" class="hidden">
+                <h1>Publicar <span class="gradient-text">Noticia</span></h1>
+                <div class="form-group">
+                    <label>Título de la Noticia</label>
+                    <input type="text" id="news-title" placeholder="Ej: Nuevo programa en vivo">
+                </div>
+                <div class="form-group">
+                    <label>Archivo Multimedia (Foto, Video o Audio)</label>
+                    <input type="file" id="news-file" accept="image/*,video/*,audio/*">
+                    <p class="helper-text">Sube una foto, un video o un archivo de audio directamente desde tu celular o computadora.</p>
+                </div>
+                <div class="form-group">
+                    <label>Contenido</label>
+                    <textarea id="news-desc" placeholder="Escribe los detalles aquí..."></textarea>
+                </div>
+                <button class="publish-btn" onclick="guardarNoticia()">Publicar Ahora</button>
+                <p id="msg-success" style="color: var(--accent-1); text-align: center; margin-top: 15px; display: none;">¡Noticia publicada con éxito!</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function verificarPass() {
+            const usuarioValido = "jhodansca"; 
+            const passSecreta = "vonartv2026"; 
+
+            const usuarioIngresado = document.getElementById('admin-user').value;
+            const passIngresada = document.getElementById('admin-pass').value;
+
+            if(usuarioIngresado === usuarioValido && passIngresada === passSecreta) {
+                document.getElementById('login-box').classList.add('hidden');
+                document.getElementById('form-box').classList.remove('hidden');
+            } else {
+                alert("Usuario o contraseña incorrectos");
+            }
+        }
+
+        function guardarNoticia() {
+            const titulo = document.getElementById('news-title').value;
+            const fileInput = document.getElementById('news-file');
+            const desc = document.getElementById('news-desc').value;
+            
+            if(!titulo || !desc) {
+                alert("Por favor llena al menos el título y el contenido");
+                return;
+            }
+
+            const fecha = new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+            let noticias = JSON.parse(localStorage.getItem('mis_noticias')) || [];
+
+            if (fileInput.files && fileInput.files[0]) {
+                const archivo = fileInput.files[0];
+                const tipoArchivo = archivo.type; 
+                const lector = new FileReader();
+
+                lector.onload = function(e) {
+                    const mediaData = e.target.result; 
+                    
+                    noticias.unshift({ titulo, media: mediaData, tipo: tipoArchivo, desc, fecha });
+                    localStorage.setItem('mis_noticias', JSON.stringify(noticias));
+                    
+                    limpiarFormulario();
+                };
+                lector.readAsDataURL(archivo);
+            } else {
+                noticias.unshift({ titulo, media: '', tipo: '', desc, fecha });
+                localStorage.setItem('mis_noticias', JSON.stringify(noticias));
+                limpiarFormulario();
+            }
+        }
+
+        function limpiarFormulario() {
+            document.getElementById('news-title').value = '';
+            document.getElementById('news-file').value = '';
+            document.getElementById('news-desc').value = '';
+            
+            const msg = document.getElementById('msg-success');
+            msg.style.display = 'block';
+            setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>
