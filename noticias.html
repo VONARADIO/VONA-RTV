@@ -188,33 +188,35 @@
     </footer>
 
     <script>
-        const blogID = "3233359031121706073";
         let listaNoticiasGlobal = [];
 
         async function cargarNoticiasBlogger() {
             const contenedor = document.getElementById('news-container');
             try {
-                const respuesta = await fetch(`https://www.blogger.com/feeds/${blogID}/posts/default?alt=json`);
+                // Usamos el conversor público global api.rss2json.com usando la URL RSS directa del blog
+                const urlRss = "https://vona-rtv.blogspot.com/feeds/posts/default?alt=rss";
+                const respuesta = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(urlRss)}`);
                 const datos = await respuesta.json();
-                const entradas = datos.feed.entry;
-
-                if (!entradas || entradas.length === 0) {
-                    contenedor.innerHTML = `<p style="color: rgba(255,255,255,0.5); text-align: center; font-size: 1.1rem; grid-column: 1/-1;">Muy pronto publicaremos nuevas noticias. ¡Mantente atento!</p>`;
+                
+                if (!datos.items || datos.items.length === 0) {
+                    contenedor.innerHTML = `<p style="color: rgba(255,255,255,0.5); text-align: center; font-size: 1.1rem; grid-column: 1/-1;">No hay publicaciones todavía.</p>`;
                     return;
                 }
 
+                const entradas = datos.items;
                 contenedor.innerHTML = '';
                 listaNoticiasGlobal = entradas;
 
                 entradas.forEach((entrada, index) => {
-                    const titulo = entrada.title.$t;
-                    const contenidoHtml = entrada.content.$t;
-                    const fechaCruda = new Date(entrada.published.$t);
+                    const titulo = entrada.title;
+                    const contenidoHtml = entrada.content || entrada.description;
+                    
+                    const fechaCruda = new Date(entrada.pubDate);
                     const fecha = fechaCruda.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
 
-                    // Extraer la primera imagen o video si existe en el contenido
                     const tempDiv = document.createElement('div');
                     tempDiv.innerHTML = contenidoHtml;
+                    
                     const img = tempDiv.querySelector('img');
                     const iframe = tempDiv.querySelector('iframe');
                     const video = tempDiv.querySelector('video');
@@ -228,8 +230,7 @@
                         mediaHtml = `<img src="${img.src}" alt="${titulo}">`;
                     }
 
-                    // Limpiar etiquetas HTML para el texto de la tarjeta
-                    const textoLimpio = tempDiv.textContent || tempDiv.innerText || "";
+                    const textoLimpio = tempDiv.textContent || tempDiv.innerText || "Haz clic para ver el contenido completo.";
 
                     const tarjeta = document.createElement('article');
                     tarjeta.className = 'news-card';
@@ -248,7 +249,7 @@
 
             } catch (error) {
                 console.error("Error al cargar las noticias:", error);
-                contenedor.innerHTML = `<p style="color: rgba(255,255,255,0.5); text-align: center; font-size: 1.1rem; grid-column: 1/-1;">Muy pronto publicaremos nuevas noticias. ¡Mantente atento!</p>`;
+                contenedor.innerHTML = `<p style="color: rgba(255,255,255,0.5); text-align: center; font-size: 1.1rem; grid-column: 1/-1;">Error al sincronizar con Blogger.</p>`;
             }
         }
 
@@ -256,14 +257,13 @@
             const entrada = listaNoticiasGlobal[index];
             const modal = document.getElementById('news-modal');
             
-            document.getElementById('modal-title').innerText = entrada.title.$t;
+            document.getElementById('modal-title').innerText = entrada.title;
             
-            const fechaCruda = new Date(entrada.published.$t);
+            const fechaCruda = new Date(entrada.pubDate);
             document.getElementById('modal-date').innerText = fechaCruda.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
             
-            // Mostrar todo el contenido HTML original (incluyendo fotos y videos completos)
-            document.getElementById('modal-desc').innerHTML = entrada.content.$t;
-            document.getElementById('modal-media').innerHTML = ''; // Limpiamos contenedor extra ya que el contenido viene completo
+            document.getElementById('modal-desc').innerHTML = entrada.content || entrada.description;
+            document.getElementById('modal-media').innerHTML = '';
 
             modal.style.display = 'block';
             document.body.style.overflow = 'hidden';
@@ -280,7 +280,6 @@
             if (event.target === modal) cerrarNoticia();
         }
 
-        // Ejecutar al cargar la página
         cargarNoticiasBlogger();
     </script>
 </body>
