@@ -188,81 +188,85 @@
     </footer>
 
     <script>
+        const blogUrl = "https://vona-rtv.blogspot.com";
         let listaNoticiasGlobal = [];
 
         async function cargarNoticiasBlogger() {
             const contenedor = document.getElementById('news-container');
             try {
-                // Usamos el conversor público global api.rss2json.com usando la URL RSS directa del blog
-                const urlRss = "https://vona-rtv.blogspot.com/feeds/posts/default?alt=rss";
-                const respuesta = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(urlRss)}`);
-                const datos = await respuesta.json();
-                
-                if (!datos.items || datos.items.length === 0) {
-                    contenedor.innerHTML = `<p style="color: rgba(255,255,255,0.5); text-align: center; font-size: 1.1rem; grid-column: 1/-1;">No hay publicaciones todavía.</p>`;
-                    return;
-                }
-
-                const entradas = datos.items;
-                contenedor.innerHTML = '';
-                listaNoticiasGlobal = entradas;
-
-                entradas.forEach((entrada, index) => {
-                    const titulo = entrada.title;
-                    const contenidoHtml = entrada.content || entrada.description;
-                    
-                    const fechaCruda = new Date(entrada.pubDate);
-                    const fecha = fechaCruda.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
-
-                    const tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = contenidoHtml;
-                    
-                    const img = tempDiv.querySelector('img');
-                    const iframe = tempDiv.querySelector('iframe');
-                    const video = tempDiv.querySelector('video');
-
-                    let mediaHtml = '';
-                    if (iframe) {
-                        mediaHtml = `<iframe src="${iframe.src}" frameborder="0" style="pointer-events: none;"></iframe>`;
-                    } else if (video) {
-                        mediaHtml = `<video style="pointer-events: none;"><source src="${video.src}" type="video/mp4"></video>`;
-                    } else if (img) {
-                        mediaHtml = `<img src="${img.src}" alt="${titulo}">`;
-                    }
-
-                    const textoLimpio = tempDiv.textContent || tempDiv.innerText || "Haz clic para ver el contenido completo.";
-
-                    const tarjeta = document.createElement('article');
-                    tarjeta.className = 'news-card';
-                    tarjeta.onclick = function() { abrirNoticia(index); };
-
-                    tarjeta.innerHTML = `
-                        ${mediaHtml}
-                        <div class="news-content">
-                            <span class="news-date">${fecha}</span>
-                            <h2>${titulo}</h2>
-                            <p>${textoLimpio}</p>
-                        </div>
-                    `;
-                    contenedor.appendChild(tarjeta);
-                });
-
+                // Usamos JSONP nativo de Blogger para leer directamente sin intermediarios con caché
+                const scriptTag = document.createElement('script');
+                scriptTag.src = `${blogUrl}/feeds/posts/default?alt=json-in-script&callback=procesarEntradasBlogger`;
+                document.body.appendChild(scriptTag);
             } catch (error) {
                 console.error("Error al cargar las noticias:", error);
-                contenedor.innerHTML = `<p style="color: rgba(255,255,255,0.5); text-align: center; font-size: 1.1rem; grid-column: 1/-1;">Error al sincronizar con Blogger.</p>`;
+                contenedor.innerHTML = `<p style="color: rgba(255,255,255,0.5); text-align: center; font-size: 1.1rem; grid-column: 1/-1;">No hay publicaciones todavía.</p>`;
             }
+        }
+
+        function procesarEntradasBlogger(root) {
+            const contenedor = document.getElementById('news-container');
+            
+            if (!root.feed || !root.feed.entry || root.feed.entry.length === 0) {
+                contenedor.innerHTML = `<p style="color: rgba(255,255,255,0.5); text-align: center; font-size: 1.1rem; grid-column: 1/-1;">No hay publicaciones todavía.</p>`;
+                return;
+            }
+
+            const entradas = root.feed.entry;
+            contenedor.innerHTML = '';
+            listaNoticiasGlobal = entradas;
+
+            entradas.forEach((entrada, index) => {
+                const titulo = entrada.title.$t;
+                const contenidoHtml = entrada.content ? entrada.content.$t : (entrada.summary ? entrada.summary.$t : '');
+                
+                const fechaCruda = new Date(entrada.published.$t);
+                const fecha = fechaCruda.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = contenidoHtml;
+                
+                const img = tempDiv.querySelector('img');
+                const iframe = tempDiv.querySelector('iframe');
+                const video = tempDiv.querySelector('video');
+
+                let mediaHtml = '';
+                if (iframe) {
+                    mediaHtml = `<iframe src="${iframe.src}" frameborder="0" style="pointer-events: none;"></iframe>`;
+                } else if (video) {
+                    mediaHtml = `<video style="pointer-events: none;"><source src="${video.src}" type="video/mp4"></video>`;
+                } else if (img) {
+                    mediaHtml = `<img src="${img.src}" alt="${titulo}">`;
+                }
+
+                const textoLimpio = tempDiv.textContent || tempDiv.innerText || "Haz clic para ver el contenido completo.";
+
+                const tarjeta = document.createElement('article');
+                tarjeta.className = 'news-card';
+                tarjeta.onclick = function() { abrirNoticia(index); };
+
+                tarjeta.innerHTML = `
+                    ${mediaHtml}
+                    <div class="news-content">
+                        <span class="news-date">${fecha}</span>
+                        <h2>${titulo}</h2>
+                        <p>${textoLimpio}</p>
+                    </div>
+                `;
+                contenedor.appendChild(tarjeta);
+            });
         }
 
         function abrirNoticia(index) {
             const entrada = listaNoticiasGlobal[index];
             const modal = document.getElementById('news-modal');
             
-            document.getElementById('modal-title').innerText = entrada.title;
+            document.getElementById('modal-title').innerText = entrada.title.$t;
             
-            const fechaCruda = new Date(entrada.pubDate);
+            const fechaCruda = new Date(entrada.published.$t);
             document.getElementById('modal-date').innerText = fechaCruda.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
             
-            document.getElementById('modal-desc').innerHTML = entrada.content || entrada.description;
+            document.getElementById('modal-desc').innerHTML = entrada.content ? entrada.content.$t : entrada.summary.$t;
             document.getElementById('modal-media').innerHTML = '';
 
             modal.style.display = 'block';
