@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
-        /* DISEÑO DE LOS RECUADROS INDEPENDIENTES */
         .news-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -26,33 +25,20 @@
             display: flex;
             flex-direction: column;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            cursor: pointer; /* Cambia el cursor a una manito para indicar que se puede hacer clic */
+            cursor: pointer;
         }
 
         .news-card:hover {
             transform: translateY(-5px); 
-            box-shadow: 0 15px 35px rgba(255, 255, 255, 0.1); /* Efecto de brillo al pasar el mouse */
+            box-shadow: 0 15px 35px rgba(255, 255, 255, 0.1); 
         }
 
-        .news-card img, .news-card video {
+        .news-card img, .news-card video, .news-card iframe {
             width: 100%;
             height: 220px;
             object-fit: cover;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             background: #000;
-        }
-
-        .audio-container {
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.6);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .audio-container audio {
-            width: 100%;
         }
 
         .news-content {
@@ -76,7 +62,6 @@
             line-height: 1.3;
         }
 
-        /* En la tarjeta pequeña, limitamos el texto a 3 líneas */
         .news-content p {
             color: #cccccc;
             font-size: 0.95rem;
@@ -88,25 +73,22 @@
             overflow: hidden;
         }
 
-        /* =========================================
-           DISEÑO DE LA VENTANA EMERGENTE (MODAL)
-           ========================================= */
         .modal-overlay {
-            display: none; /* Oculto por defecto */
+            display: none; 
             position: fixed;
             z-index: 9999;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.85); /* Fondo oscuro transparente */
-            backdrop-filter: blur(8px); /* Desenfoca el fondo */
-            overflow-y: auto; /* Permite hacer scroll si la noticia es muy larga */
+            background-color: rgba(0, 0, 0, 0.85); 
+            backdrop-filter: blur(8px); 
+            overflow-y: auto; 
         }
 
         .modal-content {
             background: #111;
-            margin: 5% auto; /* Centrado con margen arriba */
+            margin: 5% auto; 
             padding: 40px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px;
@@ -114,12 +96,6 @@
             max-width: 800px;
             position: relative;
             box-shadow: 0 20px 50px rgba(0,0,0,0.9);
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .close-btn {
@@ -137,10 +113,10 @@
             color: #fff;
         }
 
-        .modal-media img, .modal-media video {
+        .modal-media img, .modal-media video, .modal-media iframe {
             width: 100%;
             max-height: 450px;
-            object-fit: contain; /* Para que la foto completa se vea sin cortarse */
+            object-fit: contain; 
             border-radius: 8px;
             margin-bottom: 25px;
             background: #000;
@@ -150,7 +126,6 @@
             color: #ddd;
             font-size: 1.1rem;
             line-height: 1.8;
-            white-space: pre-wrap; /* Respeta los saltos de línea que hagas en el panel admin */
         }
     </style>
 </head>
@@ -182,13 +157,11 @@
             <p style="color: var(--text-muted);">Entérate de los acontecimientos más importantes, exclusivas y novedades musicales.</p>
         </section>
 
-        <!-- Cuadrícula donde aparecerán los recuadros -->
         <div class="news-grid" id="news-container">
-            <!-- Las noticias aparecerán aquí -->
+            <p style="color: rgba(255,255,255,0.5); text-align: center; font-size: 1.1rem; grid-column: 1/-1;">Cargando noticias...</p>
         </div>
     </main>
 
-    <!-- EL MODAL (VENTANA EMERGENTE PARA NOTICIA EXPANDIDA) -->
     <div id="news-modal" class="modal-overlay">
         <div class="modal-content">
             <span class="close-btn" onclick="cerrarNoticia()">&times;</span>
@@ -215,103 +188,100 @@
     </footer>
 
     <script>
-        const contenedor = document.getElementById('news-container');
-        const noticias = JSON.parse(localStorage.getItem('mis_noticias')) || [];
+        const blogID = "3233359031121706073";
+        let listaNoticiasGlobal = [];
 
-        if (noticias.length === 0) {
-            contenedor.innerHTML = `<p style="color: rgba(255,255,255,0.5); text-align: center; font-size: 1.1rem; grid-column: 1/-1;">Muy pronto publicaremos nuevas noticias. ¡Mantente atento!</p>`;
-        } else {
-            noticias.forEach((noticia, index) => {
-                const tarjeta = document.createElement('article');
-                tarjeta.className = 'news-card';
-                // Al hacer clic en la tarjeta, abre la función con el índice de la noticia
-                tarjeta.onclick = function() { abrirNoticia(index); };
-                
-                let mediaHtml = ``;
+        async function cargarNoticiasBlogger() {
+            const contenedor = document.getElementById('news-container');
+            try {
+                const respuesta = await fetch(`https://www.blogger.com/feeds/${blogID}/posts/default?alt=json`);
+                const datos = await respuesta.json();
+                const entradas = datos.feed.entry;
 
-                if (noticia.media) {
-                    if (noticia.tipo && noticia.tipo.startsWith('video')) {
-                        mediaHtml = `<video><source src="${noticia.media}" type="${noticia.tipo}"></video>`;
-                    } else if (noticia.tipo && noticia.tipo.startsWith('audio')) {
-                        mediaHtml = `
-                            <div class="audio-container">
-                                <audio controls>
-                                    <source src="${noticia.media}" type="${noticia.tipo}">
-                                </audio>
-                            </div>
-                        `;
-                    } else {
-                        mediaHtml = `<img src="${noticia.media}" alt="${noticia.titulo}">`;
-                    }
+                if (!entradas || entradas.length === 0) {
+                    contenedor.innerHTML = `<p style="color: rgba(255,255,255,0.5); text-align: center; font-size: 1.1rem; grid-column: 1/-1;">Muy pronto publicaremos nuevas noticias. ¡Mantente atento!</p>`;
+                    return;
                 }
 
-                tarjeta.innerHTML = `
-                    ${mediaHtml}
-                    <div class="news-content">
-                        <span class="news-date">${noticia.fecha}</span>
-                        <h2>${noticia.titulo}</h2>
-                        <p>${noticia.desc}</p>
-                    </div>
-                `;
-                contenedor.appendChild(tarjeta);
-            });
-        }
+                contenedor.innerHTML = '';
+                listaNoticiasGlobal = entradas;
 
-        // FUNCIÓN PARA ABRIR LA NOTICIA EN GRANDE
-        function abrirNoticia(index) {
-            const noticia = noticias[index];
-            const modal = document.getElementById('news-modal');
-            const mediaContenedor = document.getElementById('modal-media');
-            
-            // Llenar textos
-            document.getElementById('modal-title').innerText = noticia.titulo;
-            document.getElementById('modal-date').innerText = noticia.fecha;
-            document.getElementById('modal-desc').innerText = noticia.desc;
+                entradas.forEach((entrada, index) => {
+                    const titulo = entrada.title.$t;
+                    const contenidoHtml = entrada.content.$t;
+                    const fechaCruda = new Date(entrada.published.$t);
+                    const fecha = fechaCruda.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
 
-            // Llenar multimedia (Agregamos "controls" a los videos para que se puedan reproducir aquí)
-            mediaContenedor.innerHTML = '';
-            if (noticia.media) {
-                if (noticia.tipo && noticia.tipo.startsWith('video')) {
-                    mediaContenedor.innerHTML = `<video controls autoplay><source src="${noticia.media}" type="${noticia.tipo}"></video>`;
-                } else if (noticia.tipo && noticia.tipo.startsWith('audio')) {
-                    mediaContenedor.innerHTML = `
-                        <div class="audio-container" style="border-radius: 8px; margin-bottom: 25px;">
-                            <audio controls autoplay>
-                                <source src="${noticia.media}" type="${noticia.tipo}">
-                            </audio>
+                    // Extraer la primera imagen o video si existe en el contenido
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = contenidoHtml;
+                    const img = tempDiv.querySelector('img');
+                    const iframe = tempDiv.querySelector('iframe');
+                    const video = tempDiv.querySelector('video');
+
+                    let mediaHtml = '';
+                    if (iframe) {
+                        mediaHtml = `<iframe src="${iframe.src}" frameborder="0" style="pointer-events: none;"></iframe>`;
+                    } else if (video) {
+                        mediaHtml = `<video style="pointer-events: none;"><source src="${video.src}" type="video/mp4"></video>`;
+                    } else if (img) {
+                        mediaHtml = `<img src="${img.src}" alt="${titulo}">`;
+                    }
+
+                    // Limpiar etiquetas HTML para el texto de la tarjeta
+                    const textoLimpio = tempDiv.textContent || tempDiv.innerText || "";
+
+                    const tarjeta = document.createElement('article');
+                    tarjeta.className = 'news-card';
+                    tarjeta.onclick = function() { abrirNoticia(index); };
+
+                    tarjeta.innerHTML = `
+                        ${mediaHtml}
+                        <div class="news-content">
+                            <span class="news-date">${fecha}</span>
+                            <h2>${titulo}</h2>
+                            <p>${textoLimpio}</p>
                         </div>
                     `;
-                } else {
-                    mediaContenedor.innerHTML = `<img src="${noticia.media}" alt="${noticia.titulo}">`;
-                }
-            }
+                    contenedor.appendChild(tarjeta);
+                });
 
-            // Mostrar la ventana
-            modal.style.display = 'block';
+            } catch (error) {
+                console.error("Error al cargar las noticias:", error);
+                contenedor.innerHTML = `<p style="color: rgba(255,255,255,0.5); text-align: center; font-size: 1.1rem; grid-column: 1/-1;">Muy pronto publicaremos nuevas noticias. ¡Mantente atento!</p>`;
+            }
+        }
+
+        function abrirNoticia(index) {
+            const entrada = listaNoticiasGlobal[index];
+            const modal = document.getElementById('news-modal');
             
-            // Bloquear el scroll del fondo
+            document.getElementById('modal-title').innerText = entrada.title.$t;
+            
+            const fechaCruda = new Date(entrada.published.$t);
+            document.getElementById('modal-date').innerText = fechaCruda.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+            
+            // Mostrar todo el contenido HTML original (incluyendo fotos y videos completos)
+            document.getElementById('modal-desc').innerHTML = entrada.content.$t;
+            document.getElementById('modal-media').innerHTML = ''; // Limpiamos contenedor extra ya que el contenido viene completo
+
+            modal.style.display = 'block';
             document.body.style.overflow = 'hidden';
         }
 
-        // FUNCIÓN PARA CERRAR LA NOTICIA
         function cerrarNoticia() {
-            const modal = document.getElementById('news-modal');
-            modal.style.display = 'none';
-            
-            // Vaciar multimedia para que el audio o video dejen de sonar de fondo
-            document.getElementById('modal-media').innerHTML = '';
-            
-            // Reactivar el scroll del fondo
+            document.getElementById('news-modal').style.display = 'none';
+            document.getElementById('modal-desc').innerHTML = '';
             document.body.style.overflow = 'auto';
         }
 
-        // Cerrar la ventana si se hace clic afuera del recuadro negro
         window.onclick = function(event) {
             const modal = document.getElementById('news-modal');
-            if (event.target === modal) {
-                cerrarNoticia();
-            }
+            if (event.target === modal) cerrarNoticia();
         }
+
+        // Ejecutar al cargar la página
+        cargarNoticiasBlogger();
     </script>
 </body>
 </html>
